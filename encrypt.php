@@ -1,6 +1,6 @@
 <?php
-$clave  = 'jordi';
-$method = 'aes-256-cbc';
+$clau  = 'jordi';
+$metode = 'aes-256-cbc';
 $iv = base64_decode("C9fBxl1EWtYTL1/M8jfstw==");
  $encriptar = function ($text) use ($metode, $clau, $iv) {
      return openssl_encrypt ($text, $metode, $clau, false, $iv);
@@ -16,3 +16,4 @@ $text_encriptat = $encriptar($text);
 $text_desencriptat = $desencriptar($text_encriptat);
 echo 'Encriptat: '. $text_encriptat . '<br>';
 echo 'Desencriptat: '. $text_desencriptat . '<br>';
+?>

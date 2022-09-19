@@ -24,7 +24,6 @@ function decrypt($sp){
     $sp_array = array_reverse($sp_array);
     $sp_array = implode("", $sp_array);
     $sp_array = strrev($sp_array);
-    echo $sp_array;
-     
+    return $sp_array;  
 }
 ?>
