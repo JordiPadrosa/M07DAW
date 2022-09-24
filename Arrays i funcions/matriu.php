@@ -4,7 +4,7 @@ $taula = creaMatriu($n);
 echo mostraMatriu($taula, $n);
 echo transposaMatriu($taula, $n);
 function creaMatriu($n){
-    for($i=0;$i<$n;$i++):array{
+    for($i=0;$i<$n;$i++){
         for($y=0;$y<$n;$y++){
             if($y==$i){
                 $taula[$i][$y] = "*";
@@ -17,7 +17,7 @@ function creaMatriu($n){
     }
     return $taula;
 }
-function mostraMatriu($taula, $n):string{
+function mostraMatriu($taula, $n){
     $string = "<table>";
     for ($i=0;$i<$n;$i++) {
         $string = $string."<tr>";
