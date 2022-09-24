@@ -2,7 +2,8 @@
 $n = 4;
 $taula = creaMatriu($n);
 echo mostraMatriu($taula, $n);
-echo transposaMatriu($taula, $n);
+$taulagirada = transposaMatriu($taula, $n);
+echo mostraMatriu($taulagirada, $n);
 function creaMatriu($n){
     for($i=0;$i<$n;$i++){
         for($y=0;$y<$n;$y++){
@@ -41,7 +42,7 @@ function transposaMatriu($taula, $n){
             }
         }
     }
-    return mostraMatriu($taulaGirada,$n);
+    return $taulaGirada;
 }
 
 ?>
