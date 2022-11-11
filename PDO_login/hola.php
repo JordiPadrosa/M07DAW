@@ -30,7 +30,7 @@ function llegeix($email)
     $pw = "dwes-pass";
     $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
 
-    $query = $pdo->prepare("select ip, time FROM connexions WHERE (user = 'jordi@gmail') AND (status = 'singup_succes' OR  status = 'signin_success')");
+    $query = $pdo->prepare("select ip, time FROM connexions WHERE (user = 'jordi@gmail') AND (status = 'singup_success' OR  status = 'signin_success')");
     $query->execute();
     $connexions = "";
     foreach ($query as $row ) {
