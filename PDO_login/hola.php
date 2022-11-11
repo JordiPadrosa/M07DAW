@@ -34,7 +34,7 @@ function llegeix($email)
         exit;
     }
 
-    $query = $pdo->prepare("select ip, time FROM connexions WHERE (user = '$email') AND (status = 'signup_succes' OR  status = 'signin_success')");
+    $query = $pdo->prepare("select ip, time FROM connexions WHERE (user = '$email') AND (status = 'signup_success' OR  status = 'signin_success')");
     $query->execute();
     $connexions = "";
     foreach ($query as $row ) {
