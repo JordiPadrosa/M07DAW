@@ -1,0 +1,74 @@
+[
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 17:03:45",
+        "status": "signup_success"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 17:04:53",
+        "status": "signin_success"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 17:05:08",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": null,
+        "time": "2022-11-03 17:18:56",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": "bernat@gmail",
+        "time": "2022-11-03 17:19:14",
+        "status": "signup_success"
+    },
+    {
+        "ip": "::1",
+        "user": "bernat@gmail",
+        "time": "2022-11-03 17:19:35",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": null,
+        "time": "2022-11-03 17:20:47",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 17:31:15",
+        "status": "signin_success"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 17:31:18",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 18:26:40",
+        "status": "signin_success"
+    },
+    {
+        "ip": "::1",
+        "user": "jordi@gmail",
+        "time": "2022-11-03 18:27:39",
+        "status": "logoff"
+    },
+    {
+        "ip": "::1",
+        "user": "josep@gmail",
+        "time": "2022-11-10 11:51:35",
+        "status": "signup_success"
+    }
+]
