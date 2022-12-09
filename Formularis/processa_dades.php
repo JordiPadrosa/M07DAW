@@ -8,5 +8,4 @@ foreach ($_REQUEST as $key => $value) {
         echo "El valor és: $value <br>";
         }
 }
-
 ?>

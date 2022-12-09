@@ -1,0 +1,16 @@
+index.html
+main.js
+moduls/
+	canvas.mjs
+	square.mjs
+
+num factura: 2022/X
+Article: llista Articles (desplegable)
+Codi	Nom	Quantitat	Preu	Total
+0821	Patates	2		20€	40€
+
+Base Imposable 40€
+IVA 21%: 21%Base Imposable
+Import: total
+
+Factura: 2022/02 Recuperar
