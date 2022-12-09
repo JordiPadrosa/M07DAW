@@ -8,6 +8,8 @@ if(isset($_SESSION["temps"])){
         session_destroy();
         header("Location: index.php"); 
     }
+}else{
+    header("Location: index.php");
 }
 $correu = $_SESSION["correu"];
 $nom = $_SESSION["nom"];

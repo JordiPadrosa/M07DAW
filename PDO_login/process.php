@@ -73,6 +73,7 @@ elseif($_POST["method"] == "tancarSessio"){
 
 /**
  * Accedeix a la base de dades i retorna els usuaris
+ * Accedeix a la base de dades i retorna els usuaris
  *
  * @return array | null
  */

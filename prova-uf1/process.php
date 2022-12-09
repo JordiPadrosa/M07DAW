@@ -40,7 +40,6 @@ elseif($_POST["method"] == "signin"){
     }else{
         $dades = array($_POST["correu"], $_POST["contrasenya"]);
         $file = "users.json";
-        if(file_exists($file)){
             $buscarCorreu = llegeix($file);
             // Si el correu existeix i la password d'aquest coincideix em la password entrada
             if(isset($buscarCorreu[$dades[0]]) && $buscarCorreu[$dades[0]]["password"] == $dades[1]){
