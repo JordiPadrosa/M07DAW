@@ -22,7 +22,7 @@ function llegirConcursants() : array {
     $gossos = $query->fetchAll(PDO::FETCH_OBJ);
     return $gossos;
 }
-function afegirVot($dades) {
+function faseActual($data) {
     try {
         $hostname = "localhost";
         $dbname = "dwes_jordipadrosa_concursgossos";
@@ -34,9 +34,32 @@ function afegirVot($dades) {
         exit;
     }
 
-    $sql = "INSERT INTO vots VALUES(?, ?, ?, ?)";
-    $query = $pdo->prepare($sql);
-    $query->execute(array(null, $dades[1], $dades[2], $dades[3]));
+    $query = $pdo->prepare("select num FROM fases WHERE '$data' >= dataInici AND '$data' <= dataFinal");
+    $query->execute();
+    $fase = 0;
+    foreach ($query as $row ) {
+    $fase = $row['num'];
+    }
+    return $fase;
+}
+function DataFinalFaseActual($data) {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
+    }
+
+    $query = $pdo->prepare("select dataFinal FROM fases WHERE '$data' >= dataInici AND '$data' <= dataFinal");
+    $query->execute();
+    foreach ($query as $row ) {
+    $data = $row['dataFinal'];
+    }
+    return $data;
 }
 ?>
 <!DOCTYPE html>
@@ -49,8 +72,8 @@ function afegirVot($dades) {
 </head>
 <body>
 <div class="wrapper">
-    <header>Votació popular del Concurs Internacional de Gossos d'Atura 2023- FASE <span> 1 </span></header>
-    <p class="info"> Podeu votar fins el dia 01/02/2023</p>
+    <header>Votació popular del Concurs Internacional de Gossos d'Atura 2023- FASE <span> <?php echo FaseActual($_SESSION["data"]) ?></span></header>
+    <p class="info"> Podeu votar fins el dia <?php echo DataFinalFaseActual($_SESSION["data"]) ?></p>
 
     <p class="warning"> Ja has votat al gos MUSCLO. Es modificarà la teva resposta</p>
     <div class="poll-area">
@@ -64,7 +87,7 @@ function afegirVot($dades) {
         <input type="radio" name="poll" id="opt-6">
         <input type="radio" name="poll" id="opt-7">
         <input type="radio" name="poll" id="opt-8"-->
-        <form action="resultats.php">
+        <form action="process.php" method="GET">
         <?php
         $gossos = llegirConcursants();
             for ($i=0; $i<sizeof($gossos); $i++){
@@ -85,8 +108,6 @@ function afegirVot($dades) {
             }
         ?>
         </form>
-        <input type="hidden" name="method" value="afegirVot"/>
-        <input type="submit" name="afegirVot" value="Envia">
 
         <!--label for="opt-1" class="opt-1">
             <div class="row">

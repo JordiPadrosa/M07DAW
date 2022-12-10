@@ -6,12 +6,13 @@ if(!isset($_SESSION["data"])){
 }elseif(isset($_GET["data"])){
     $_SESSION["data"] = $_GET["data"];
 }
+var_dump($_SESSION["opt"]);
 $gossos = llegirConcursants();
 $dates = llegirDates();
-if($_SESSION["data"] > $dates[0][1] && $_SESSION["data"] <= $dates[0][2]){
+if($_SESSION["data"] >= $dates[0][1] && $_SESSION["data"] <= $dates[0][2]){
     $fase = " Resultat fase 1 ";
     imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[1][1] && $_SESSION["data"] <= $dates[1][2]){
+}elseif($_SESSION["data"] >= $dates[1][1] && $_SESSION["data"] <= $dates[1][2]){
     $fase = " Resultat fase 2 ";
     imprimirGossos($gossos, $fase);
 }elseif($_SESSION["data"] > $dates[2][1] && $_SESSION["data"] <= $dates[2][2]){
