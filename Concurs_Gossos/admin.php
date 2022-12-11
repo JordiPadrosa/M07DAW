@@ -22,6 +22,9 @@ if(!isset($_SESSION["errorConcursant"])){
 if(!isset($_SESSION["errorData"])){
     $_SESSION["errorData"]= 0;
 }
+if(!isset($_SESSION["errorFase"])){
+    $_SESSION["errorFase"]= 0;
+}
 function llegirConcursants() : array | null {
     try {
         $hostname = "localhost";
@@ -170,17 +173,29 @@ function llegirDates() : array | null {
                 <input type="submit" name="afegirConcursant" value="Afegeix">
             </form>
         </div>
-
+        
         <div class="admin-row">
+            <?php
+            if(!$_SESSION["errorFase"] == 0){
+                ?>
+                <div class="container-notifications">
+                <p class="hide" id="message" style=""><?php echo $_SESSION["errorFase"]?></p>
+                </div>
+            <?php
+            }
+            $_SESSION["errorFase"] = 0;
+            ?>
             <h1> Altres operacions: </h1>
-            <form>
+            <form action="process.php" method="post">
                 Esborra els vots de la fase
-                <input type="number" placeholder="Fase" value="">
-                <input type="button" value="Esborra">
+                <input type="hidden" name="method" value="borrarVotsFase"/>
+                <input type="number" name="numFase" placeholder="Fase" value="">
+                <input type="submit" name="borrarVotsFase" value="Esborra">
             </form>
-            <form>
+            <form action="process.php" method="post">
                 Esborra tots els vots
-                <input type="button" value="Esborra">
+                <input type="hidden" name="method" value="borrarVots"/>
+                <input type="submit" name="borrarVots" value="Esborra">
             </form>
         </div>
     </div>

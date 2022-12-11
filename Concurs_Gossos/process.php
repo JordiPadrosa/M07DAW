@@ -1,25 +1,7 @@
 <?php
 session_start();
 include 'gos.php';
-if(isset($_GET["opt"])){
-    $gossos = llegirConcursants();
-    $_SESSION["opt"] = $gossos[$_GET["opt"]]->nom; 
-}
-if(isset($_SESSION["opt"])){
-    if(isset($_SESSION["id"])){
-        if(mirarVot($_SESSION["id"], faseActual($_SESSION["data"])) == '1'){
-            modificarVot();
-        }else{
-            $dades = array('1', faseActual($_SESSION["data"]), $_SESSION["opt"]);
-            afegirVot($dades);
-        }
-    }else{
-        $dades = array('1', faseActual($_SESSION["data"]), $_SESSION["opt"]);
-        afegirVot($dades);
-    }
-    
-    //header("Location: resultat.php");
-}elseif($_POST["method"] == "signin"){
+if($_POST["method"] == "signin"){
     if($_POST["usuari"] == "" || $_POST["contrasenya"] == ""){
         header("Location: login.php?signin_campsObligatoris_error", true, 303);
     }// Si l'usuari o contrasenya són massa llargs retorna l'error corresponent
@@ -96,6 +78,20 @@ if(isset($_SESSION["opt"])){
             $dades = array($_POST["nom"], $_POST["img"], $_POST["amo"], $_POST["raça"]);
             afegirConcursant($dades);
         }
+    }
+    header("Location: admin.php");
+}elseif($_POST["method"] == "borrarVotsFase"){
+    if(isset($_POST['borrarVotsFase'])) {
+        if($_POST["numFase"] == "" || $_POST["numFase"] < 0 || $_POST["numFase"] > 8){
+            $_SESSION["errorFase"] = "Numero invàlid";
+        }else{
+            borrarVotsFase($_POST["numFase"]);
+        }
+    }
+    header("Location: admin.php");
+}elseif($_POST["method"] == "borrarVots"){
+    if(isset($_POST['borrarVots'])) {
+        borrarVots();
     }
     header("Location: admin.php");
 }
@@ -255,64 +251,7 @@ function afegirConcursant($dades) {
     $query = $pdo->prepare($sql);
     $query->execute(array($dades[0], $dades[1], $dades[2], $dades[3]));
 }
-function mirarVot($id, $fase) {
-    try {
-        $hostname = "localhost";
-        $dbname = "dwes_jordipadrosa_concursgossos";
-        $username = "dwes-user";
-        $pw = "dwes-pass";
-        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
-    } catch (PDOException $e) {
-        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
-        exit;
-    }
 
-    $query = $pdo->prepare("select numVots FROM vots WHERE id = '$id' AND fase = '$fase'");
-    $query->execute();
-    $numVots = 0;
-    foreach ($query as $row ) {
-    $numVots = $row['numVots'];
-    }
-    return $numVots;
-}
-function afegirVot($dades) {
-    try {
-        $hostname = "localhost";
-        $dbname = "dwes_jordipadrosa_concursgossos";
-        $username = "dwes-user";
-        $pw = "dwes-pass";
-        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
-    } catch (PDOException $e) {
-        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
-        exit;
-    }
-
-    $sql = "INSERT INTO vots VALUES(?, ?, ?, ?)";
-    $query = $pdo->prepare($sql);
-    $query->execute(array(null, $dades[0], $dades[1], $dades[2]));
-    
-    $query = $pdo->prepare("select MAX(id) FROM vots");
-    $query->execute();
-    foreach ($query as $row ) {
-    $_SESSION["id"] = $row["MAX(id)"];
-    }   
-}
-function modificarVot($gos, $id) {
-    try {
-        $hostname = "localhost";
-        $dbname = "dwes_jordipadrosa_concursgossos";
-        $username = "dwes-user";
-        $pw = "dwes-pass";
-        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
-    } catch (PDOException $e) {
-        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
-        exit;
-    }
-
-    $sql = "UPDATE vots SET gos = ? WHERE id = '$id'";
-    $query = $pdo->prepare($sql);
-    $query->execute(array($gos, $id));
-}
 function llegirConcursants() : array {
     try {
         $hostname = "localhost";
@@ -330,7 +269,7 @@ function llegirConcursants() : array {
     $gossos = $query->fetchAll(PDO::FETCH_OBJ);
     return $gossos;
 }
-function faseActual($data) {
+function borrarVotsFase($fase) {
     try {
         $hostname = "localhost";
         $dbname = "dwes_jordipadrosa_concursgossos";
@@ -342,12 +281,22 @@ function faseActual($data) {
         exit;
     }
 
-    $query = $pdo->prepare("select num FROM fases WHERE '$data' >= dataInici AND '$data' <= dataFinal");
+    $query = $pdo->prepare("DELETE FROM vots WHERE fase = '$fase'");
     $query->execute();
-    $fase = 0;
-    foreach ($query as $row ) {
-    $fase = $row['num'];
+}
+function borrarVots() {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
     }
-    return $fase;
+
+    $query = $pdo->prepare("DELETE FROM vots");
+    $query->execute();
 }
 ?>

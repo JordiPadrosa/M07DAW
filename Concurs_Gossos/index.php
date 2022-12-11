@@ -61,6 +61,65 @@ function DataFinalFaseActual($data) {
     }
     return $data;
 }
+function gosEliminat($gos, $fase) {
+    if($fase == 1){
+        return "";
+    }else{
+        $altresGossos = llegirConcursants();
+        for ($i=0; $i<sizeof($altresGossos); $i++){
+            if(votsGos($gos, $fase-1) > votsGos($altresGossos[$i]->nom, $fase-1)){
+                return "";
+            }else{
+                $eliminat = "hidden";
+            }
+        }
+    return $eliminat;
+    }
+}
+function votsGos($gos, $fase) {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
+    }
+
+    $query = $pdo->prepare("select SUM(numVots) FROM vots WHERE gos = '$gos' AND fase = '$fase'");
+    $query->execute();
+    $fases = 0;
+    foreach ($query as $row ) {
+        if(votsFase($fase) == 0) {
+            $fases = 0;
+        }else{
+            $fases = ($row["SUM(numVots)"]*100)/votsFase($fase);
+        }
+    }
+    return $fases;
+}
+function votsFase($fase) {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
+    }
+
+    $query = $pdo->prepare("select SUM(numVots) FROM vots WHERE fase = '$fase'");
+    $query->execute();
+    $fases = 0;
+    foreach ($query as $row ) {
+    $fases = $row["SUM(numVots)"];
+    }
+    return $fases;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ca">
@@ -72,145 +131,51 @@ function DataFinalFaseActual($data) {
 </head>
 <body>
 <div class="wrapper">
+    <?php
+    if(faseActual($_SESSION["data"]) == 0){
+        ?>
+        <header>EL CONCURS NO HA COMENÇAT</header>
+        <?php
+    }else{
+    ?>
     <header>Votació popular del Concurs Internacional de Gossos d'Atura 2023- FASE <span> <?php echo FaseActual($_SESSION["data"]) ?></span></header>
     <p class="info"> Podeu votar fins el dia <?php echo DataFinalFaseActual($_SESSION["data"]) ?></p>
-
-    <p class="warning"> Ja has votat al gos MUSCLO. Es modificarà la teva resposta</p>
+    <?php
+    if(isset($_SESSION["opt"])){
+        ?>
+        <p class="warning"> Ja has votat al gos <?php echo $_SESSION["opt"] ?>. Es modificarà la teva resposta</p>
+        <?php
+    }
+    ?>
     <div class="poll-area">
-        <!--form action="process.php" method="post">
-        <input type="radio" name="poll" id="opt-0">
-        <input type="radio" name="poll" id="opt-1">
-        <input type="radio" name="poll" id="opt-2">
-        <input type="radio" name="poll" id="opt-3">
-        <input type="radio" name="poll" id="opt-4">
-        <input type="radio" name="poll" id="opt-5">
-        <input type="radio" name="poll" id="opt-6">
-        <input type="radio" name="poll" id="opt-7">
-        <input type="radio" name="poll" id="opt-8"-->
-        <form action="process.php" method="GET">
+        <form action="processResultats.php" method="POST">
         <?php
         $gossos = llegirConcursants();
             for ($i=0; $i<sizeof($gossos); $i++){
-                ?>
-                <label for="opt-<?php echo $i ?>" class="btn">
-                    <input type="submit" name="opt" id="opt-<?php echo $i ?>" value="<?php echo $i ?>"/>
-                    <div class="row">
-                        <div class="column">
-                            <div class="right">
-                            <span class="circle"></span>
-                            <span class="text"><?php echo $gossos[$i]->nom ?></span>
+                if(gosEliminat($gossos[$i]->nom, faseActual($_SESSION["data"])) == ""){
+                    ?>
+                    <label for="opt-<?php echo $i ?>" class="btn">
+                        <input type="submit" class="submit" name="opt" id="opt-<?php echo $i ?>" value="<?php echo $i ?>"/>
+                        <div class="row">
+                            <div class="column">
+                                <div class="right">
+                                <span class="circle"></span>
+                                <span class="text"><?php echo $gossos[$i]->nom ?></span>
+                                </div>
+                                <img class="dog" alt="<?php echo $gossos[$i]->nom ?>" src="<?php echo $gossos[$i]->img ?>">
                             </div>
-                            <img class="dog" alt="<?php echo $gossos[$i]->nom ?>" src="<?php echo $gossos[$i]->img ?>">
                         </div>
-                    </div>
-                </label>
-                <?php
+                    </label>
+                    <?php
+                }
             }
         ?>
         </form>
-
-        <!--label for="opt-1" class="opt-1">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                    <span class="circle"></span>
-                    <span class="text">Musclo</span>
-                    </div>
-                    <img class="dog"  alt="Musclo" src="img/g1.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-2" class="opt-2">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Jingo</span>
-                    </div>
-                    <img class="dog"  alt="Jingo" src="img/g2.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-3" class="opt-3">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Xuia</span>
-                    </div>
-                    <img class="dog"  alt="Xuia" src="img/g3.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-4" class="opt-4">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Bruc</span>
-                    </div>
-                    <img class="dog"  alt="Bruc" src="img/g4.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-5" class="opt-5">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Mango</span>
-                    </div>
-                    <img class="dog"  alt="Mango" src="img/g5.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-6" class="opt-6">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Fluski</span>
-                    </div>
-                    <img class="dog"  alt="Fluski" src="img/g6.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-7" class="opt-7">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Fonoll</span>
-                    </div>
-                    <img class="dog"  alt="Fonoll" src="img/g7.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-8" class="opt-8">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Swing</span>
-                    </div>
-                    <img class="dog"  alt="Swing" src="img/g8.png">
-                </div>
-            </div>
-        </label>
-        <label for="opt-9" class="opt-9">
-            <div class="row">
-                <div class="column">
-                    <div class="right">
-                        <span class="circle"></span>
-                        <span class="text">Coloma</span>
-                    </div>
-                    <img class="dog"  alt="Coloma" src="img/g9.png">
-                </div>
-            </div>
-        </label>
-        </form-->
     </div>
     <p> Mostra els <a href="resultats.php">resultats</a> de les fases anteriors.</p>
+    <?php
+    }
+    ?>
 </div>
 </body>
 </html>

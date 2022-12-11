@@ -6,37 +6,29 @@ if(!isset($_SESSION["data"])){
 }elseif(isset($_GET["data"])){
     $_SESSION["data"] = $_GET["data"];
 }
-var_dump($_SESSION["opt"]);
 $gossos = llegirConcursants();
 $dates = llegirDates();
-if($_SESSION["data"] >= $dates[0][1] && $_SESSION["data"] <= $dates[0][2]){
-    $fase = " Resultat fase 1 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] >= $dates[1][1] && $_SESSION["data"] <= $dates[1][2]){
-    $fase = " Resultat fase 2 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[2][1] && $_SESSION["data"] <= $dates[2][2]){
-    $fase = " Resultat fase 3 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[3][1] && $_SESSION["data"] <= $dates[3][2]){
-    $fase = " Resultat fase 4 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[4][1] && $_SESSION["data"] <= $dates[4][2]){
-    $fase = " Resultat fase 5 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[5][1] && $_SESSION["data"] <= $dates[5][2]){
-    $fase = " Resultat fase 6 ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[6][1] && $_SESSION["data"] <= $dates[6][2]){
-    $fase = " Resultat fase 7 - Semifinal ";
-    imprimirGossos($gossos, $fase);
-}elseif($_SESSION["data"] > $dates[7][1] && $_SESSION["data"] <= $dates[7][2]){
-    $fase = " Resultat fase  - Final ";
-    imprimirGossos($gossos, $fase);
+if($_SESSION["data"] < $dates[0][1]){
+    ?>
+    <div class="wrapper large">
+    <header> EL CONCURS NO HA COMENÇAT </header>
+    <div class="results">
+    <?php    
 }else{
-    $fase = " El concurs no ha començat ";
-    imprimirGossos($gossos, $fase);
+    for($i=0; $i<sizeof($dates); $i++){
+        if($_SESSION["data"] >= $dates[$i][1] && $_SESSION["data"] <= $dates[$i][2]){
+            ?>
+            <div class="wrapper large">
+            <header>Resultat de la votació popular del Concurs Internacional de Gossos d'Atura 2023</header>
+            <div class="results">
+            <?php
+            $fase = $i + 1;
+            $titolFase = " Resultat fase $fase";
+            imprimirGossos($gossos, $titolFase, $fase);
+        }
+    }
 }
+
 /**
  * Accedeix a la base de dades i retorna els usuaris
  *
@@ -79,20 +71,75 @@ function llegirDates() : array | null {
     }
     return $fases;
 }
-function imprimirGossos($gossos, $fase) {
+function votsGos($gos, $fase) {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
+    }
+
+    $query = $pdo->prepare("select SUM(numVots) FROM vots WHERE gos = '$gos' AND fase = '$fase'");
+    $query->execute();
+    $fases = 0;
+    foreach ($query as $row ) {
+        if(votsFase($fase) == 0) {
+            $fases = 0;
+        }else{
+            $fases = ($row["SUM(numVots)"]*100)/votsFase($fase);
+        }
+    }
+    return $fases;
+}
+function votsFase($fase) {
+    try {
+        $hostname = "localhost";
+        $dbname = "dwes_jordipadrosa_concursgossos";
+        $username = "dwes-user";
+        $pw = "dwes-pass";
+        $pdo = new PDO ("mysql:host=$hostname;dbname=$dbname","$username","$pw");
+    } catch (PDOException $e) {
+        echo "Failed to get DB handle: " . $e->getMessage() . "\n";
+        exit;
+    }
+
+    $query = $pdo->prepare("select SUM(numVots) FROM vots WHERE fase = '$fase'");
+    $query->execute();
+    $fases = 0;
+    foreach ($query as $row ) {
+    $fases = $row["SUM(numVots)"];
+    }
+    return $fases;
+}
+function imprimirGossos($gossos, $titolFase, $fase) {
     ?>
-    <div class="wrapper large">
-    <header>Resultat de la votació popular del Concurs Internacional de Gossos d'Atura 2023</header>
-    <div class="results">
-    <h1><?php echo $fase ?></h1>
+    <h1><?php echo $titolFase ?></h1>
     <?php
     for ($i=0; $i<sizeof($gossos); $i++){
         ?>
-        <img class="dog" alt="<?php echo $gossos[$i]->nom?>" title="<?php echo $gossos[$i]->nom?> 45%" src="<?php echo $gossos[$i]->img ?>">
+        <img class="dog" <?php echo gosEliminat($gossos[$i]->nom, $fase)?> alt="<?php echo $gossos[$i]->nom?>" title="<?php echo $gossos[$i]->nom;?> <?php echo votsGos($gossos[$i]->nom, $fase)?>%" src="<?php echo $gossos[$i]->img ?>">
         <?php
     }
 }
-
+function gosEliminat($gos, $fase) {
+    if($fase == 1){
+        return "";
+    }else{
+        $altresGossos = llegirConcursants();
+        for ($i=0; $i<sizeof($altresGossos); $i++){
+            if(votsGos($gos, $fase-1) > votsGos($altresGossos[$i]->nom, $fase-1)){
+                return "";
+            }else{
+                $eliminat = "hidden";
+            }
+        }
+    return $eliminat;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ca">
@@ -103,71 +150,5 @@ function imprimirGossos($gossos, $fase) {
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!--div class="wrapper large">
-    <header>Resultat de la votació popular del Concurs Internacional de Gossos d'Atura 2023</header>
-    <div class="results">
-    <h1> Resultat fase 1 </h1>
-    <img class="dog" alt="<?php echo $g1->nom?>" title="<?php echo $g1->nom?> 15%" src="<?php echo $g1->img ?>">
-    <img class="dog" alt="<?php echo $g2->nom?>" title="<?php echo $g2->nom?> 45%" src="<?php echo $g2->img ?>">
-    <img class="dog" alt="<?php echo $g3->nom?>" title="<?php echo $g3->nom?> 4%" src="<?php echo $g3->img ?>">
-    <img class="dog" alt="<?php echo $g4->nom?>" title="<?php echo $g4->nom?> 3%" src="<?php echo $g4->img ?>">
-    <img class="dog" alt="<?php echo $g5->nom?>" title="<?php echo $g5->nom?> 13%" src="<?php echo $g5->img ?>">
-    <img class="dog" alt="<?php echo $g6->nom?>" title="<?php echo $g6->nom?> 12 %" src="<?php echo $g6->img ?>">
-    <img class="dog" alt="<?php echo $g7->nom?>" title="<?php echo $g7->nom?> 5%" src="<?php echo $g7->img ?>">
-    <img class="dog" alt="<?php echo $g8->nom?>" title="<?php echo $g8->nom?> 2%" src="<?php echo $g8->img ?>">
-    <img class="dog" alt="<?php echo $g9->nom?>" title="<?php echo $g1->nom?> 1%" src="<?php echo $g9->img ?>">
-
-    <h1> Resultat fase 2 </h1>
-    <img class="dog" alt="Musclo" title="Musclo 44%" src="img/g1.png">
-    <img class="dog" alt="Jingo" title="Jingo 5%" src="img/g2.png">
-    <img class="dog" alt="Xuia" title="Xuia 3%" src="img/g3.png">
-    <img class="dog" alt="Bruc" title="Bruc 5%" src="img/g4.png">
-    <img class="dog eliminat" alt="Mango" title="Mango 2%" src="img/g5.png">
-    <img class="dog" alt="Fluski" title="Fluski 7%" src="img/g6.png">
-    <img class="dog" alt="Fonoll" title="Fonoll 13%" src="img/g7.png">
-    <img class="dog" alt="Swing" title="Swing 21%" src="img/g8.png">
-
-    <h1> Resultat fase 3 </h1>
-    <img class="dog" alt="Musclo" title="Musclo 43%" src="img/g1.png">
-    <img class="dog" alt="Jingo" title="Jingo 5%" src="img/g2.png">
-    <img class="dog" alt="Xuia" title="Xuia 3%" src="img/g3.png">
-    <img class="dog" alt="Bruc" title="Bruc 5%" src="img/g4.png">
-    <img class="dog eliminat" alt="Fluski" title="Fluski 7%" src="img/g6.png">
-    <img class="dog" alt="Fonoll" title="Fonoll 24%" src="img/g7.png">
-    <img class="dog" alt="Swing" title="Swing 13%" src="img/g8.png">
-
-    <h1> Resultat fase 4 </h1>
-    <img class="dog" alt="Musclo" title="Musclo 42%" src="img/g1.png">
-    <img class="dog" alt="Jingo" title="Jingo 10%" src="img/g2.png">
-    <img class="dog eliminat" alt="Xuia" title="Xuia 5%" src="img/g3.png">
-    <img class="dog" alt="Bruc" title="Bruc 6%" src="img/g4.png">
-    <img class="dog" alt="Fonoll" title="Fonoll 25%" src="img/g7.png">
-    <img class="dog" alt="Swing" title="Swing 12%" src="img/g8.png">
-
-    <h1> Resultat fase 5 </h1>
-    <img class="dog" alt="Musclo" title="Musclo 50%" src="img/g1.png">
-    <img class="dog" alt="Jingo" title="Jingo 7%" src="img/g2.png">
-    <img class="dog" alt="Bruc" title="Bruc 13%" src="img/g4.png">
-    <img class="dog eliminat" alt="Fonoll" title="Fonoll 5%" src="img/g7.png">
-    <img class="dog" alt="Swing" title="Swing 25%" src="img/g8.png">
-
-    <h1> Resultat fase 6 </h1>
-    <img class="dog" alt="Musclo" title="Musclo 50%" src="img/g1.png">
-    <img class="dog" alt="Jingo" title="Jingo 16%" src="img/g2.png">
-    <img class="dog eliminat" alt="Bruc" title="Bruc 14%" src="img/g4.png">
-    <img class="dog" alt="Swing" title="Swing 20%" src="img/g8.png">
-
-    <h1> Resultat fase 7 - Semifinal </h1>
-    <img class="dog" alt="Musclo" title="Musclo 34%" src="img/g1.png">
-    <img class="dog eliminat" alt="Jingo" title="Jingo 16%" src="img/g2.png">
-    <img class="dog" alt="Swing" title="Swing 50%" src="img/g8.png">
-
-    <h1> Resultat fase 8 - Final </h1>
-    <img class="dog" alt="Musclo" title="Musclo 75%" src="img/g1.png">
-    <img class="dog eliminat" alt="Swing" title="Swing 25%" src="img/g8.png">
-    </div>
-
-</div-->
-
 </body>
 </html>
